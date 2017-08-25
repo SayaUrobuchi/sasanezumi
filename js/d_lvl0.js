@@ -25,7 +25,9 @@ var RAT_TEMPLATE = {
 	x: 0, 
 	y: 0, 
 	scale: 1, 
+	kizu_scale: 1, 
 	img_id: "RAT1", 
+	hit_down: 64, 
 	// difficulty
 	appear_time: 24, 
 	stay_time: 48, 

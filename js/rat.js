@@ -117,12 +117,12 @@ function Rat(data)
 				// hit and died
 				else
 				{
-					var p = 1-self.progress;
+					var p = (self.progress > .5 ? 1-(self.progress-.5)/.5 : 1);
 					var atemp = g.globalAlpha;
 					g.globalAlpha = p;
 					var h_rate = (0.4 + 0.6*p);
-					var h = draw_height * h_rate;
-					var sh = self.img.height * h_rate;
+					var h = (draw_height-data.hit_down) * h_rate;
+					var sh = (self.img.height-data.hit_down/data.scale) * h_rate;
 					g.drawImage(self.img, 0, 0, self.img.width, sh, draw_x-draw_width/2, draw_y-h, draw_width, h);
 					self.draw_hit_pos(g, data.kizu_scale, draw_height-h);
 					g.globalAlpha = atemp;

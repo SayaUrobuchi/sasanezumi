@@ -37,6 +37,7 @@ function StageScene()
 		
 		// clear table
 		self.clear_input();
+		self.nikukyuu_list = [];
 	}
 	
 	self.deinit = function ()
@@ -68,7 +69,7 @@ function StageScene()
 		// update rat/cat spawn/disappear
 		{
 			// spawn new rats
-			if (self.fid % 60 == 8)
+			if (self.fid % 24 == 8)
 			{
 				// if able to spawn
 				if (level.hole_pool.length > 0)
@@ -145,6 +146,53 @@ function StageScene()
 			for (var i=0; i<level.hole_occupied.length; i++)
 			{
 				level.hole_occupied[i].rat.draw(self, g);
+			}
+		}
+		// draw nikukyuu
+		{
+			var draw_width = 128;
+			var draw_height = 128;
+			var img = image.NIKUKYUU;
+			var jj = 0;
+			var lim_t = 24;
+			var disappear_t = 20;
+			var sub_t = 16;
+			var shadow_scale = 4;
+			for (var i=0; i<self.nikukyuu_list.length; i++)
+			{
+				var item = self.nikukyuu_list[i];
+				item.t++;
+				var ga_temp = g.globalAlpha;
+				// sub
+				if (item.t <= sub_t)
+				{
+					var p = item.t / sub_t;
+					var alpha = 0.6 * (1-p);
+					var scale = 1 + shadow_scale*p;
+					var subw = draw_width*scale;
+					var subh = draw_height*scale;
+					g.globalAlpha = ga_temp * alpha;
+					g.drawImage(img, item.x-(subw-draw_width)/2, item.y-(subh-draw_height)/2, subw, subh);
+				}
+				// master
+				if (item.t >= disappear_t)
+				{
+					g.globalAlpha = ga_temp * Math.min(1, item.t / lim_t);
+				}
+				else
+				{
+					g.globalAlpha = ga_temp;
+				}
+				g.drawImage(img, item.x, item.y, draw_width, draw_height);
+				g.globalAlpha = ga_temp;
+				if (item.t <= lim_t)
+				{
+					self.nikukyuu_list[jj++] = self.nikukyuu_list[i];
+				}
+			}
+			while (self.nikukyuu_list.length > jj)
+			{
+				self.nikukyuu_list.pop();
 			}
 		}
 		// draw ui
@@ -415,6 +463,11 @@ function StageScene()
 		{
 			// todo
 		}
+		self.nikukyuu_list.push({
+			x: hole.x + hole.w*frand(0.3, 0.7), 
+			y: hole.y + hole.h*frand(0.4, 0.8), 
+			t: 0, 
+		});
 	}
 	
 	self.play_bgm = function (data)

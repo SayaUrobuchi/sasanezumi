@@ -20,6 +20,7 @@ var IMAGE = {
 	BG0: "p/background0.jpg", 
 	RAT1: "p/nezumi1.png", 
 	KIZU: "p/damaged.png", 
+	NIKUKYUU: "p/nikukyuu.png", 
 };
 
 var AUDIO = {
