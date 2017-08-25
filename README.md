@@ -1,2 +1,2 @@
 # sasanezumi
-17tanabata
+2017 tanabata special project for my love
