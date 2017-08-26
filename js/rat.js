@@ -26,7 +26,10 @@ function Rat(data)
 	
 	self.update = function (stage)
 	{
-		self.fid++;
+		if (stage.state == STAGE.PLAY)
+		{
+			self.fid++;
+		}
 		switch (self.state)
 		{
 		case RAT_STATE.NONE:
@@ -44,6 +47,8 @@ function Rat(data)
 			if (self.fid > data.stay_time)
 			{
 				self.change_state(RAT_STATE.LEAVE);
+				// miss damage apply
+				stage.master.hp -= data.miss_damage;
 			}
 			break;
 		case RAT_STATE.LEAVE:
@@ -162,19 +167,29 @@ function Rat(data)
 	
 	self.hit = function (stage)
 	{
+		var hit = false;
+		var master = stage.master;
 		// only hit after NONE and before LEAVE
 		if (self.state == RAT_STATE.HIT || (self.state > RAT_STATE.NONE && self.state < RAT_STATE.LEAVE))
 		{
-			self.hp -= stage.master.pow;
-			if (self.state != RAT_STATE.HIT)
+			if (self.hp > 0)
 			{
-				self.state_before_hit = self.state;
-				self.temp_fid = self.fid + data.hit_time;
+				self.hp -= stage.master.pow;
+				// master affect
+				master.hp += (self.hp > 0 ? data.hit_heal : data.hit_die_heal);
+				// rat state
+				if (self.state != RAT_STATE.HIT)
+				{
+					self.state_before_hit = self.state;
+					self.temp_fid = self.fid + data.hit_time;
+				}
+				self.temp_fid -= data.hit_extra_stay;
+				self.gain_hit_kizu();
+				self.change_state(RAT_STATE.HIT);
+				hit = true;
 			}
-			self.temp_fid -= data.hit_extra_stay;
-			self.gain_hit_kizu();
-			self.change_state(RAT_STATE.HIT);
 		}
+		return hit;
 	}
 	
 	self.gain_hit_kizu = function ()

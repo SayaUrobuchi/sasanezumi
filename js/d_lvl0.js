@@ -7,6 +7,7 @@ var LEVEL_TEMPLATE = {
 	hole_y_shift: 140, 
 	background_img_id: "BG0", 
 	rat: [], 
+	hit_miss_penalty: 32, 
 };
 
 var HOLE_TEMPLATE = {
@@ -37,6 +38,9 @@ var RAT_TEMPLATE = {
 	hit_extra_stay: 0, 
 	// status
 	hp: 100, 
+	hit_heal: 0, 
+	hit_die_heal: 32, 
+	miss_damage: 64, 
 };
 
 LEVEL_TEMPLATE.init = function (self)

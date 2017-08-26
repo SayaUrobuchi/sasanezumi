@@ -109,6 +109,11 @@ function cos_f(st, ed, now)
 	return st + (ed-st)*(1-Math.cos(now*deg(90)));
 }
 
+function swing_f(st, ed, now)
+{
+	return st + (ed-st)*(.5-Math.cos(now*Math.PI)/2);
+}
+
 function is_collide(p, q)
 {
 	var dx = p.x - q.x;

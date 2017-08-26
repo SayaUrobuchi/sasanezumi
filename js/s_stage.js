@@ -1,18 +1,11 @@
 
-var STG = {
+var STAGE = {
 	NONE: -1, 
 	LOADING: 0, 
 	READY: 1, 
-	START: 2, 
-	BATTLE: 3, 
-	GAME_OVER: 4, 
-	ENEMY_DEFEAT: 5, 
-	CLEAR: 6, 
-	EVENT: 8, 
+	PLAY: 2, 
+	GAME_OVER: 8, 
 	DONE: 9, 
-	ANI_IN: 32, 
-	ANI_OUT: 33, 
-	WAITING: 34, 
 	END: 35, 
 };
 
@@ -24,15 +17,17 @@ function StageScene()
 	{
 		// init state
 		self.fid = 0;
-		self.state = STG.NONE;
+		self.state = STAGE.NONE;
 		
 		// init level
 		self.level_id = LEVEL1;
 		self.load_level();
+		self.time = 0;
 		
 		// init master (fake now)
 		self.master = {
 			pow: 150, 
+			hp: 1024, 
 		};
 		
 		// clear table
@@ -59,17 +54,30 @@ function StageScene()
 	
 	self.update = function (g)
 	{
+		if (self.state == STAGE.NONE)
+		{
+			self.state = STAGE.PLAY;
+		}
 		self.fid++;
 		self.update_level(g);
 	}
 	
 	self.update_level = function (g)
 	{
+		if (self.state == STAGE.PLAY)
+		{
+			self.time++;
+			if (self.master.hp < 0)
+			{
+				self.state = STAGE.GAME_OVER;
+				self.fid = 0;
+			}
+		}
 		var level = self.level;
 		// update rat/cat spawn/disappear
 		{
 			// spawn new rats
-			if (self.fid % 24 == 8)
+			if (self.state == STAGE.PLAY && self.time % 24 == 8)
 			{
 				// if able to spawn
 				if (level.hole_pool.length > 0)
@@ -157,14 +165,14 @@ function StageScene()
 			var lim_t = 24;
 			var disappear_t = 20;
 			var sub_t = 16;
-			var shadow_scale = 4;
+			var shadow_scale = 1.2;
 			for (var i=0; i<self.nikukyuu_list.length; i++)
 			{
 				var item = self.nikukyuu_list[i];
 				item.t++;
 				var ga_temp = g.globalAlpha;
 				// sub
-				if (item.t <= sub_t)
+				if (item.hit && item.t <= sub_t)
 				{
 					var p = item.t / sub_t;
 					var alpha = 0.6 * (1-p);
@@ -177,7 +185,7 @@ function StageScene()
 				// master
 				if (item.t >= disappear_t)
 				{
-					g.globalAlpha = ga_temp * Math.min(1, item.t / lim_t);
+					g.globalAlpha = ga_temp * (1-Math.min(1, (item.t-disappear_t) / (lim_t-disappear_t)));
 				}
 				else
 				{
@@ -200,16 +208,21 @@ function StageScene()
 			var left_shift = 8;
 			var top_shift = 8;
 			var top_int = 56;
+			var top_alb_extra = 0;
 			// draw time
 			{
+				var text = Math.floor(self.time / game.fps);
 				g.font = UI.STAGE.TIME.TITLE_FONT;
 				g.textAlign = "left";
 				g.textBaseline = "top";
 				var color = UI.STAGE.TIME.TEXT_COLOR;
 				g.fillStyle = color;
 				g.fillText(UI.STAGE.TIME.TITLE_TEXT, left_shift, top_shift+top_int*0);
+				g.font = UI.STAGE.TIME.FONT;
+				g.textAlign = "right";
+				g.fillText(text, left_shift+260, top_shift+top_alb_extra);
 			}
-			// draw time
+			// draw hp
 			{
 				g.font = UI.STAGE.HP.TITLE_FONT;
 				g.textAlign = "left";
@@ -217,8 +230,32 @@ function StageScene()
 				var color = UI.STAGE.HP.TEXT_COLOR;
 				g.fillStyle = color;
 				g.fillText(UI.STAGE.HP.TITLE_TEXT, left_shift, top_shift+top_int*1);
+				var hp = self.master.hp;
+				var life_shift = left_shift+140;
+				var life_top_shift = top_shift + top_int*1;
+				var life_int = -16;
+				var life_width = 64;
+				var life_height = 64;
+				var life_full = 256;
+				var life_half = 128;
+				var life_full_img = image.LIFE;
+				var life_half_img = image.LIFE_DAMAGED;
+				for (var i=0; i<8&&hp>0; i++)
+				{
+					var img;
+					if (hp >= life_half)
+					{
+						img = life_full_img;
+					}
+					else
+					{
+						img = life_half_img;
+					}
+					g.drawImage(img, life_shift+(life_width+life_int)*i, life_top_shift, life_width, life_height);
+					hp -= life_full;
+				}
 			}
-			// draw time
+			// draw mp
 			{
 				g.font = UI.STAGE.MP.TITLE_FONT;
 				g.textAlign = "left";
@@ -227,6 +264,44 @@ function StageScene()
 				g.fillStyle = color;
 				g.fillText(UI.STAGE.MP.TITLE_TEXT, left_shift, top_shift+top_int*2);
 			}
+		}
+		// draw game over
+		if (self.state == STAGE.GAME_OVER)
+		{
+			var text_fade_t = 96;
+			var text_alpha = Math.min(1, self.fid/text_fade_t);
+			var ga_temp = g.globalAlpha;
+			g.globalAlpha = .6;
+			{
+				g.fillStyle = COLOR.BLACK;
+				g.fillRect(0, 0, UI.SCREEN.WIDTH, UI.SCREEN.HEIGHT);
+			}
+			g.globalAlpha = text_alpha;
+			{
+				g.font = UI.STAGE.GAMEOVER.FONT;
+				g.textAlign = "center";
+				g.textBaseline = "middle";
+				g.fillStyle = UI.STAGE.GAMEOVER.TEXT_COLOR;
+				g.fillText(UI.STAGE.GAMEOVER.TEXT, UI.SCREEN.WIDTH/2, UI.SCREEN.HEIGHT/2);
+			}
+			g.globalAlpha = ga_temp;
+			var cry_width = 168;
+			var cry_height = 168;
+			var scale = 1.2;
+			var first_t = 16;
+			var second_t = 6;
+			var real_scale = 1;
+			if (self.fid <= first_t)
+			{
+				real_scale = swing_f(0, scale, Math.min(1, self.fid/first_t));
+			}
+			else
+			{
+				real_scale = sin_f(scale, 1, Math.min(1, (self.fid-first_t)/(second_t)));
+			}
+			var w_shift = cry_width - cry_width*real_scale;
+			var h_shift = cry_height - cry_height*real_scale;
+			g.drawImage(image.NEKO_CRY, UI.SCREEN.WIDTH-192+w_shift/2, UI.SCREEN.HEIGHT/2+h_shift/2, cry_width*real_scale, cry_height*real_scale);
 		}
 	}
 	
@@ -454,20 +529,30 @@ function StageScene()
 	
 	self.hit = function (hole)
 	{
-		if (hole.rat)
+		if (self.state == STAGE.PLAY)
 		{
-			hole.rat.hit(self);
+			var hit = false;
+			if (hole.rat)
+			{
+				hit = hole.rat.hit(self);
+			}
+			// if there's no rat, give some penalty
+			else
+			{
+				// todo
+			}
+			// miss penalty
+			if (!hit)
+			{
+				self.master.hp -= self.level.hit_miss_penalty;
+			}
+			self.nikukyuu_list.push({
+				x: hole.x + hole.w*frand(0.3, 0.7), 
+				y: hole.y + hole.h*frand(0.4, 0.8), 
+				t: 0, 
+				hit: hit, 
+			});
 		}
-		// if there's no rat, give some penalty
-		else
-		{
-			// todo
-		}
-		self.nikukyuu_list.push({
-			x: hole.x + hole.w*frand(0.3, 0.7), 
-			y: hole.y + hole.h*frand(0.4, 0.8), 
-			t: 0, 
-		});
 	}
 	
 	self.play_bgm = function (data)

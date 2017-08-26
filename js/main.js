@@ -81,7 +81,7 @@ function main()
 {
 	init();
 	scene.push(StageScene());
-	setInterval(update, 16);
+	setInterval(update, game.frame_int);
 	//update();
 }
 

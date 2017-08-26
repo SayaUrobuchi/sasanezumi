@@ -1,7 +1,8 @@
 
 // global attr for game
 var game = {
-	stg_stage: 1, 
+	fps: 60, 
+	frame_int: 1000/60, 
 };
 
 // global settings for game (changable)
@@ -21,6 +22,9 @@ var IMAGE = {
 	RAT1: "p/nezumi1.png", 
 	KIZU: "p/damaged.png", 
 	NIKUKYUU: "p/nikukyuu.png", 
+	LIFE: "p/life.png", 
+	LIFE_DAMAGED: "p/half_life.png", 
+	NEKO_CRY: "p/neko14.png", 
 };
 
 var AUDIO = {
@@ -97,8 +101,8 @@ COLOR.TALK_BACK_INACTIVE = COLOR.DARK_RED2;
 
 var UI = {
 	DEFAULT_FONT: "Microsoft JhengHei", 
-	DEFAULT_ASCII_FONT: "monospace", 
-	UI_FONT: "monospace", 
+	DEFAULT_ASCII_FONT: "consolas", 
+	UI_FONT: "consolas", 
 	STAGE: {}, 
 };
 
@@ -120,7 +124,7 @@ UI.STAGE.TIME = {
 	TEXT_COLOR: COLOR.TEXT, 
 	BORDER_COLOR: COLOR.BLACK, 
 	TITLE_FONT: "48px "+UI.DEFAULT_FONT, 
-	FONT: "48px "+UI.UI_FONT, 
+	FONT: "56px "+UI.UI_FONT, 
 };
 
 UI.STAGE.HP = {
@@ -137,6 +141,12 @@ UI.STAGE.MP = {
 	BORDER_COLOR: COLOR.BLACK, 
 	TITLE_FONT: "48px "+UI.DEFAULT_FONT, 
 	FONT: "48px "+UI.UI_FONT, 
+};
+
+UI.STAGE.GAMEOVER = {
+	TEXT: "GAME OVER", 
+	TEXT_COLOR: COLOR.TEXT, 
+	FONT: "192px "+UI.UI_FONT, 
 };
 
 UI.SUB = {

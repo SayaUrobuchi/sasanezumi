@@ -10,6 +10,11 @@ var RAT_BASE = extend(RAT_TEMPLATE, {
 	disappear_time: 16, 
 	hit_time: 20, 
 	hit_die_time: 28, 
+	// status
+	hp: 100, 
+	hit_heal: 0, 
+	hit_die_heal: 32, 
+	miss_damage: 64, 
 });
 
 var L1_YS = 120;
@@ -66,4 +71,5 @@ level[LEVEL1] = extend(LEVEL_TEMPLATE, {
 	rat: [
 		RAT_BASE, 
 	], 
+	hit_miss_penalty: 32, 
 });
