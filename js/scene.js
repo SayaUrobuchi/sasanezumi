@@ -6,6 +6,7 @@ function Scene()
 	self.init = DO_NOTHING;
 	self.keyup = DO_NOTHING;
 	self.keydown = DO_NOTHING;
+	self.mousedown = DO_NOTHING;
 	self.update = DO_NOTHING;
 	self.deinit = DO_NOTHING;
 	
@@ -29,6 +30,15 @@ function SceneManager()
 	self.keydown = function (e)
 	{
 		return self.current.keydown(e);
+	}
+	
+	self.mousedown = function (e)
+	{
+		if (e.srcElement === canvas)
+		{
+			return self.current.mousedown(e);
+		}
+		return false;
 	}
 	
 	self.update = function (g)

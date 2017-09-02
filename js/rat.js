@@ -86,54 +86,62 @@ function Rat(data)
 		{
 			var draw_width = self.img.width * data.scale;
 			var draw_height = self.img.height * data.scale;
-			var draw_x = self.hole.rat_x;
-			var draw_y = self.hole.rat_y;
-			// draw rat
-			switch (self.state)
+			g.save();
 			{
-			case RAT_STATE.APPEAR:
-				var p = self.progress;
-				var atemp = g.globalAlpha;
-				g.globalAlpha = p;
-				var h_rate = (0.4 + 0.6*p);
-				var h = draw_height * h_rate;
-				var sh = self.img.height * h_rate;
-				g.drawImage(self.img, 0, 0, self.img.width, sh, draw_x-draw_width/2, draw_y-h, draw_width, h);
-				g.globalAlpha = atemp;
-				break;
-			case RAT_STATE.STAY:
-				g.drawImage(self.img, draw_x-draw_width/2, draw_y-draw_height, draw_width, draw_height);
-				break;
-			case RAT_STATE.LEAVE:
-				var p = 1-self.progress;
-				var atemp = g.globalAlpha;
-				g.globalAlpha = p;
-				var h_rate = (0.4 + 0.6*p);
-				var h = draw_height * h_rate;
-				var sh = self.img.height * h_rate;
-				g.drawImage(self.img, 0, 0, self.img.width, sh, draw_x-draw_width/2, draw_y-h, draw_width, h);
-				g.globalAlpha = atemp;
-				break;
-			case RAT_STATE.HIT:
-				// hit not died
-				if (self.hp > 0)
+				g.translate(self.hole.rat_x, self.hole.rat_y);
+				// draw rat
+				switch (self.state)
 				{
-				}
-				// hit and died
-				else
-				{
-					var p = (self.progress > .5 ? 1-(self.progress-.5)/.5 : 1);
+				case RAT_STATE.APPEAR:
+					var p = self.progress;
 					var atemp = g.globalAlpha;
 					g.globalAlpha = p;
 					var h_rate = (0.4 + 0.6*p);
-					var h = (draw_height-data.hit_down) * h_rate;
-					var sh = (self.img.height-data.hit_down/data.scale) * h_rate;
-					g.drawImage(self.img, 0, 0, self.img.width, sh, draw_x-draw_width/2, draw_y-h, draw_width, h);
-					self.draw_hit_pos(g, data.kizu_scale, draw_height-h);
+					var h = draw_height * h_rate;
+					var sh = self.img.height * h_rate;
+					g.drawImage(self.img, 0, 0, self.img.width, sh, -draw_width/2, -h, draw_width, h);
 					g.globalAlpha = atemp;
+					break;
+				case RAT_STATE.STAY:
+					g.drawImage(self.img, -draw_width/2, -draw_height, draw_width, draw_height);
+					break;
+				case RAT_STATE.LEAVE:
+					var p = 1-self.progress;
+					var atemp = g.globalAlpha;
+					g.globalAlpha = p;
+					var h_rate = (0.4 + 0.6*p);
+					var h = draw_height * h_rate;
+					var sh = self.img.height * h_rate;
+					g.drawImage(self.img, 0, 0, self.img.width, sh, -draw_width/2, -h, draw_width, h);
+					g.globalAlpha = atemp;
+					break;
+				case RAT_STATE.HIT:
+					// hit not died
+					if (self.hp > 0)
+					{
+					}
+					// hit and died
+					else
+					{
+						g.save();
+						g.rotate(deg(30));
+						{
+							var p = (self.progress > .5 ? 1-(self.progress-.5)/.5 : 1);
+							var atemp = g.globalAlpha;
+							g.globalAlpha = p;
+							var h_rate = (0.4 + 0.6*p);
+							var h = (draw_height-data.hit_down) * h_rate;
+							var sh = (self.img.height-data.hit_down/data.scale) * h_rate;
+							g.drawImage(self.img, 0, 0, self.img.width, sh, -draw_width/2, -h, draw_width, h);
+							self.draw_hit_pos(g, data.kizu_scale, draw_height-h);
+							g.globalAlpha = atemp;
+						}
+						g.restore();
+					}
+					break;
 				}
-				break;
 			}
+			g.restore();
 		}
 	}
 	
@@ -196,11 +204,9 @@ function Rat(data)
 	{
 		var draw_width = self.img.width * data.scale;
 		var draw_height = self.img.height * data.scale;
-		var draw_x = self.hole.rat_x;
-		var draw_y = self.hole.rat_y;
 		var res = {
-			x: draw_x-draw_width/2+draw_width*frand(0.1, 0.9), 
-			y: draw_y-draw_height+draw_height*frand(0, 0.3), 
+			x: -draw_width/2+draw_width*frand(0.1, 0.9), 
+			y: -draw_height+draw_height*frand(0, 0.3), 
 		};
 		self.hit_pos.push(res);
 	}

@@ -57,6 +57,11 @@ function keyup(e)
 	return scene.keyup(e);
 }
 
+function mousedown(e)
+{
+	return scene.mousedown(e);
+}
+
 function init()
 {
 	scene = SceneManager();
@@ -68,6 +73,7 @@ function init()
 	
 	document.addEventListener("keydown", keydown);
 	document.addEventListener("keyup", keyup);
+	document.addEventListener("mousedown", mousedown);
 }
 
 function update()

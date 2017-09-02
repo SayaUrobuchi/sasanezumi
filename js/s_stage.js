@@ -180,7 +180,7 @@ function StageScene()
 					var subw = draw_width*scale;
 					var subh = draw_height*scale;
 					g.globalAlpha = ga_temp * alpha;
-					g.drawImage(img, item.x-(subw-draw_width)/2, item.y-(subh-draw_height)/2, subw, subh);
+					g.drawImage(img, item.x-(subw)/2, item.y-(subh)/2, subw, subh);
 				}
 				// master
 				if (item.t >= disappear_t)
@@ -191,7 +191,7 @@ function StageScene()
 				{
 					g.globalAlpha = ga_temp;
 				}
-				g.drawImage(img, item.x, item.y, draw_width, draw_height);
+				g.drawImage(img, item.x-draw_width/2, item.y-draw_height/2, draw_width, draw_height);
 				g.globalAlpha = ga_temp;
 				if (item.t <= lim_t)
 				{
@@ -268,40 +268,55 @@ function StageScene()
 		// draw game over
 		if (self.state == STAGE.GAME_OVER)
 		{
+			// set scene to dark
 			var text_fade_t = 96;
-			var text_alpha = Math.min(1, self.fid/text_fade_t);
 			var ga_temp = g.globalAlpha;
 			g.globalAlpha = .6;
 			{
 				g.fillStyle = COLOR.BLACK;
 				g.fillRect(0, 0, UI.SCREEN.WIDTH, UI.SCREEN.HEIGHT);
 			}
-			g.globalAlpha = text_alpha;
-			{
-				g.font = UI.STAGE.GAMEOVER.FONT;
-				g.textAlign = "center";
-				g.textBaseline = "middle";
-				g.fillStyle = UI.STAGE.GAMEOVER.TEXT_COLOR;
-				g.fillText(UI.STAGE.GAMEOVER.TEXT, UI.SCREEN.WIDTH/2, UI.SCREEN.HEIGHT/2);
-			}
 			g.globalAlpha = ga_temp;
-			var cry_width = 168;
-			var cry_height = 168;
-			var scale = 1.2;
-			var first_t = 16;
-			var second_t = 6;
-			var real_scale = 1;
-			if (self.fid <= first_t)
+			// draw gameover text
 			{
-				real_scale = swing_f(0, scale, Math.min(1, self.fid/first_t));
+				var wait = 48;
+				if (self.fid > wait)
+				{
+					var t = 30;
+					var y = out_bounce_f(128, UI.SCREEN.HEIGHT/2, Math.min(1, (self.fid-wait)/t));
+					g.font = UI.STAGE.GAMEOVER.FONT;
+					g.textAlign = "center";
+					g.textBaseline = "middle";
+					g.fillStyle = UI.STAGE.GAMEOVER.TEXT_COLOR;
+					g.fillText(UI.STAGE.GAMEOVER.TEXT, UI.SCREEN.WIDTH/2, y);
+				}
 			}
-			else
+			// draw cat cry
 			{
-				real_scale = sin_f(scale, 1, Math.min(1, (self.fid-first_t)/(second_t)));
+				var cry_width = 168;
+				var cry_height = 168;
+				var scale = 1.2;
+				var first_t = 16;
+				var second_t = 6;
+				var real_scale = 1;
+				if (self.fid <= first_t)
+				{
+					real_scale = swing_f(0, scale, Math.min(1, self.fid/first_t));
+				}
+				else
+				{
+					real_scale = sin_f(scale, 1, Math.min(1, (self.fid-first_t)/(second_t)));
+				}
+				var w_shift = cry_width - cry_width*real_scale;
+				var h_shift = cry_height - cry_height*real_scale;
+				g.drawImage(image.NEKO_CRY, UI.SCREEN.WIDTH-192+w_shift/2, UI.SCREEN.HEIGHT/2+h_shift/2, cry_width*real_scale, cry_height*real_scale);
 			}
-			var w_shift = cry_width - cry_width*real_scale;
-			var h_shift = cry_height - cry_height*real_scale;
-			g.drawImage(image.NEKO_CRY, UI.SCREEN.WIDTH-192+w_shift/2, UI.SCREEN.HEIGHT/2+h_shift/2, cry_width*real_scale, cry_height*real_scale);
+			// re-start input
+			if (self.input[KEY.RE])
+			{
+				scene.pop();
+				scene.push(STGScene());
+			}
 		}
 	}
 	
@@ -364,31 +379,6 @@ function StageScene()
 		case STG.END:
 			self.state = STG.READY;
 			break;
-		}
-	}
-	
-	self.update_gameover = function (g)
-	{
-		if (self.state != STG.GAME_OVER || self.ss != STG.DONE)
-		{
-			return;
-		}
-		self.fcnt++;
-		self.bgm_volume(1-Math.min(1, self.fcnt/240));
-		g.font = UI.GAMEOVER.FONT;
-		g.textAlign = "center";
-		g.textBaseline = "middle";
-		g.fillStyle = UI.GAMEOVER.COLOR;
-		g.fillText(UI.GAMEOVER.TEXT, UI.GAMEOVER.X, UI.GAMEOVER.Y);
-		g.font = UI.GAMEOVER.FONT2
-		g.fillStyle = UI.GAMEOVER.COLOR2;
-		g.fillText(UI.GAMEOVER.TEXT2, UI.GAMEOVER.X2, UI.GAMEOVER.Y2);
-		if (self.input[KEY.RE])
-		{
-			self.stop_bgm();
-			self.bgm_volume(1);
-			scene.pop();
-			scene.push(STGScene());
 		}
 	}
 	
@@ -527,7 +517,7 @@ function StageScene()
 		g.translate(-x, -y);
 	}
 	
-	self.hit = function (hole)
+	self.hit = function (hole, hit_x, hit_y)
 	{
 		if (self.state == STAGE.PLAY)
 		{
@@ -546,9 +536,11 @@ function StageScene()
 			{
 				self.master.hp -= self.level.hit_miss_penalty;
 			}
+			hit_x = hit_x || hole.x + hole.w*frand(0.3, 0.7);
+			hit_y = hit_y || hole.y + hole.h*frand(0.4, 0.8);
 			self.nikukyuu_list.push({
-				x: hole.x + hole.w*frand(0.3, 0.7), 
-				y: hole.y + hole.h*frand(0.4, 0.8), 
+				x: hit_x, 
+				y: hit_y, 
 				t: 0, 
 				hit: hit, 
 			});
@@ -608,6 +600,38 @@ function StageScene()
 				}
 			}
 			return false;
+		}
+		return true;
+	}
+	
+	self.mousedown = function (e)
+	{
+		if (self.state == STAGE.PLAY)
+		{
+			var tar_hole;
+			var cx = e.offsetX - self.level.hole_x_shift;
+			var cy = e.offsetY - self.level.hole_y_shift;
+			for (var i=self.level.hole.length-1; i>=0; i--)
+			{
+				var hole = self.level.hole[i];
+				if (click_in_the_hole(hole, cx, cy))
+				{
+					if (hole.rat && hole.rat.hp > 0)
+					{
+						self.hit(hole, e.offsetX, e.offsetY);
+						return false;
+					}
+					else
+					{
+						tar_hole = hole;
+					}
+				}
+			}
+			if (tar_hole)
+			{
+				self.hit(tar_hole, e.offsetX, e.offsetY);
+				return false;
+			}
 		}
 		return true;
 	}

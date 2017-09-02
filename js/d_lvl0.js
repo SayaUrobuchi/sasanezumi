@@ -14,7 +14,7 @@ var HOLE_TEMPLATE = {
 	x: 0, 
 	y: 0, 
 	w: 300, 
-	h: 256, 
+	h: 200, 
 	cx: 150, 
 	cy: 168, 
 	img_id: "HOLE", 
@@ -84,4 +84,9 @@ function hole_draw_order_compare(a, b)
 		return a.y - b.y;
 	}
 	return a.x - b.x;
+}
+
+function click_in_the_hole(hole, x, y)
+{
+	return x >= hole.x && x <= hole.x+hole.w && y >= hole.y && y <= hole.y+hole.h;
 }
