@@ -26,6 +26,10 @@ function Rat(data)
 	
 	self.update = function (stage)
 	{
+		if (is_ndef(self.stay_time))
+		{
+			self.stay_time = data.stay_time / ((stage.stay_level+1)/8);
+		}
 		if (stage.state == STAGE.PLAY)
 		{
 			self.fid++;
@@ -185,6 +189,10 @@ function Rat(data)
 				self.hp -= stage.master.pow;
 				// master affect
 				master.hp += (self.hp > 0 ? data.hit_heal : data.hit_die_heal);
+				if (master.hp > 2048)
+				{
+					master.hp = 2048;
+				}
 				// rat state
 				if (self.state != RAT_STATE.HIT)
 				{

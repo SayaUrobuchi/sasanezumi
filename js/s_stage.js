@@ -23,6 +23,8 @@ function StageScene()
 		self.level_id = LEVEL1;
 		self.load_level();
 		self.time = 0;
+		self.spawn_timer = 64;
+		self.stay_level = 0;
 		
 		// init master (fake now)
 		self.master = {
@@ -67,6 +69,7 @@ function StageScene()
 		if (self.state == STAGE.PLAY)
 		{
 			self.time++;
+			self.spawn_timer++;
 			if (self.master.hp < 0)
 			{
 				self.state = STAGE.GAME_OVER;
@@ -77,8 +80,11 @@ function StageScene()
 		// update rat/cat spawn/disappear
 		{
 			// spawn new rats
-			if (self.state == STAGE.PLAY && self.time % 24 == 8)
+			var spawn_needed = Math.max(16, Math.floor((128 - Math.floor(self.time/60/8*4) - (self.master.hp/128+1)*4)));
+			self.stay_level = Math.max(32, Math.floor(self.time/60/16+self.master.hp/256));
+			if (self.state == STAGE.PLAY && self.spawn_timer >= spawn_needed)
 			{
+				self.spawn_timer -= spawn_needed;
 				// if able to spawn
 				if (level.hole_pool.length > 0)
 				{
@@ -536,8 +542,8 @@ function StageScene()
 			{
 				self.master.hp -= self.level.hit_miss_penalty;
 			}
-			hit_x = hit_x || hole.x + hole.w*frand(0.3, 0.7);
-			hit_y = hit_y || hole.y + hole.h*frand(0.4, 0.8);
+			hit_x = hit_x || self.level.hole_x_shift + hole.x + hole.w*frand(0.3, 0.7);
+			hit_y = hit_y || self.level.hole_y_shift + hole.y + hole.h*frand(0.3, 0.5);
 			self.nikukyuu_list.push({
 				x: hit_x, 
 				y: hit_y, 
